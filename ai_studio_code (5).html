@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>福岡之旅 Fukuoka Trip</title>
+    
+    <!-- iOS Web App 設定 (加到主畫面用) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="福岡之旅">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        wood: {
+                            100: '#F3E5AB',
+                            300: '#E2C290',
+                            500: '#C69C6D',
+                            600: '#A67C52',
+                            800: '#5C4033',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        cute: ['"Zen Maru Gothic"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Global Reset & Base Styles */
+        body {
+            /* 深色遮罩背景 */
+            background-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('https://images.unsplash.com/photo-1556903738-a289b4f74d09?q=80&w=2692&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            -webkit-tap-highlight-color: transparent;
+            font-size: var(--base-font-size, 16px);
+            transition: font-size 0.3s ease;
+        }
+
+        /* Glassmorphism Panels (Header) */
+        .glass-panel {
+            background: rgba(0, 0, 0, 0.9); /* Header 加深，避免干擾閱讀 */
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Glass Cards (Content) */
+        .glass-card {
+            background: rgba(30, 30, 30, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Wood Button Style */
+        .btn-wood {
+            background: linear-gradient(135deg, #E2C290 0%, #C69C6D 100%);
+            color: #2a1b15;
+            border: 1px solid #F3E5AB;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+            transition: all 0.2s;
+        }
+        .btn-wood:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+
+        /* Inputs */
+        input, textarea, select {
+            color: #ffffff !important;
+        }
+        ::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* Top Navigation Active State */
+        .nav-item {
+            position: relative;
+        }
+        .nav-item.active {
+            color: #E2C290;
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px; /* 對齊 Header 底部 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background-color: #E2C290;
+            border-radius: 3px 3px 0 0;
+            box-shadow: 0 0 10px rgba(226, 194, 144, 0.6);
+        }
+
+        /* Utility */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Timeline Line */
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 19px;
+            height: 100%;
+            width: 2px;
+            background: rgba(255,255,255,0.15);
+            z-index: 0;
+        }
+
+        /* Fade Animation */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Header & Navigation Container -->
+    <header class="glass-panel z-50 shrink-0 flex flex-col">
+        <!-- Row 1: Title & Settings -->
+        <div class="flex justify-between items-center px-4 py-3 border-b border-white/5">
+            <h1 class="text-xl font-bold font-cute tracking-wider text-wood-300">
+                <i class="fa-solid fa-plane-departure mr-2"></i>福岡之旅
+            </h1>
+            <button onclick="toggleFontSizeModal()" class="text-white/80 hover:text-wood-300 w-8 h-8 flex items-center justify-center rounded-full active:bg-white/10">
+                <i class="fa-solid fa-font"></i>
+            </button>
+        </div>
+
+        <!-- Row 2: Navigation Tabs -->
+        <nav class="flex justify-around items-center pt-2 pb-2">
+            <button onclick="switchTab('plan')" class="nav-item active flex flex-col items-center justify-center w-full text-gray-400 transition hover:text-gray-200">
+                <i class="fa-solid fa-map-location-dot text-lg mb-1"></i>
+                <span class="text-[10px] font-bold">行程</span>
+            </button>
+            <button onclick="switchTab('wallet')" class="nav-item flex flex-col items-center justify-center w-full text-gray-400 transition hover:text-gray-200">
+                <i class="fa-solid fa-wallet text-lg mb-1"></i>
+                <span class="text-[10px] font-bold">記帳</span>
+            </button>
+            <button onclick="switchTab('lists')" class="nav-item flex flex-col items-center justify-center w-full text-gray-400 transition hover:text-gray-200">
+                <i class="fa-solid fa-list-check text-lg mb-1"></i>
+                <span class="text-[10px] font-bold">清單</span>
+            </button>
+            <button onclick="switchTab('info')" class="nav-item flex flex-col items-center justify-center w-full text-gray-400 transition hover:text-gray-200">
+                <i class="fa-solid fa-circle-info text-lg mb-1"></i>
+                <span class="text-[10px] font-bold">資訊</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="main-container" class="flex-1 overflow-y-auto scrollbar-hide p-4 pb-10 relative">
+        
+        <!-- SECTION: PLAN -->
+        <div id="section-plan" class="fade-in">
+            <div class="mb-6 text-center mt-2">
+                <div class="inline-block px-4 py-1 rounded-full bg-wood-800/50 border border-wood-500/50 text-wood-100 text-sm mb-2 shadow-lg">
+                    5 Days Trip
+                </div>
+                <h2 class="text-2xl font-bold text-white drop-shadow-md">每日行程</h2>
+            </div>
+            
+            <div id="itinerary-container" class="space-y-6">
+                <!-- Javascript will inject itinerary here -->
+            </div>
+        </div>
+
+        <!-- SECTION: WALLET -->
+        <div id="section-wallet" class="hidden fade-in">
+            <!-- Calculator -->
+            <div class="glass-card p-4 mb-6 mt-2">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-wood-300">匯率計算機</h3>
+                    <div class="flex items-center text-xs">
+                        <span class="mr-2 text-gray-300">匯率:</span>
+                        <input type="number" id="exchange-rate" value="0.22" step="0.001" class="w-16 bg-black/60 border border-white/30 rounded px-1 py-1 text-center focus:outline-none focus:border-wood-500" onchange="saveRate()">
+                    </div>
+                </div>
+                
+                <input type="text" id="calc-input" placeholder="輸入算式 (例如: 500+200)" class="w-full bg-black/60 border border-white/20 rounded-lg p-3 text-right text-xl font-mono mb-2 focus:outline-none focus:border-wood-500/50 placeholder-gray-500">
+                
+                <div class="flex justify-between items-end">
+                    <div class="text-left">
+                        <div class="text-xs text-gray-400">約合台幣</div>
+                        <div class="text-2xl font-bold text-wood-300" id="calc-result-twd">NT$ 0</div>
+                    </div>
+                    <button onclick="calculate()" class="btn-wood px-6 py-2 rounded-lg font-bold shadow-lg">計算</button>
+                </div>
+            </div>
+
+            <!-- Expense Form -->
+            <div class="glass-card p-4 mb-6">
+                <h3 class="font-bold text-wood-300 mb-3"><i class="fa-solid fa-pen-to-square mr-2"></i>記一筆</h3>
+                <div class="grid grid-cols-3 gap-2 mb-2">
+                    <input type="text" id="expense-item" placeholder="品項名稱" class="col-span-2 bg-black/60 border border-white/20 rounded-lg p-2 focus:outline-none focus:border-wood-500">
+                    <input type="number" id="expense-amount" placeholder="¥ 金額" class="col-span-1 bg-black/60 border border-white/20 rounded-lg p-2 focus:outline-none focus:border-wood-500">
+                </div>
+                
+                <div class="flex gap-2">
+                    <label class="flex-1 flex items-center justify-center bg-white/10 border border-white/20 rounded-lg cursor-pointer hover:bg-white/20 transition h-10 active:bg-white/30">
+                        <i class="fa-solid fa-camera mr-2 text-gray-300"></i>
+                        <span class="text-sm text-gray-200">拍照</span>
+                        <input type="file" id="expense-photo" accept="image/*" class="hidden" onchange="handleImagePreview(this)">
+                    </label>
+                    <button onclick="addExpense()" class="flex-1 btn-wood rounded-lg font-bold h-10">儲存</button>
+                </div>
+                <!-- Preview area -->
+                <div id="image-preview-container" class="hidden mt-3 relative inline-block">
+                    <img id="image-preview" src="" class="h-24 rounded object-cover border border-white/30 shadow-md">
+                    <button onclick="clearImage()" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm shadow hover:bg-red-600">×</button>
+                </div>
+            </div>
+
+            <!-- Expense List -->
+            <div>
+                <div class="flex justify-between items-center mb-4 px-1">
+                    <h3 class="font-bold text-white">消費紀錄</h3>
+                    <div class="text-sm text-wood-300 font-mono">總計: <span id="total-jpy">¥0</span></div>
+                </div>
+                <div id="expense-list" class="space-y-3 pb-8">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: LISTS -->
+        <div id="section-lists" class="hidden fade-in space-y-6">
+            <!-- Checklist -->
+            <div class="mt-2">
+                <h3 class="font-bold text-xl text-wood-300 mb-3"><i class="fa-solid fa-suitcase-rolling mr-2"></i>行前準備清單</h3>
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-todo" placeholder="新增準備項目..." class="flex-1 bg-black/60 border border-white/20 rounded-lg p-2 focus:outline-none focus:border-wood-500">
+                    <button onclick="addTodo()" class="bg-wood-600 text-white px-4 rounded-lg shadow active:bg-wood-800"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div id="todo-list" class="space-y-2">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+
+            <!-- Memo -->
+            <div class="glass-card p-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-wood-300"><i class="fa-solid fa-note-sticky mr-2"></i>備忘錄</h3>
+                    <span class="text-xs text-gray-400">貼上網址可自動轉換</span>
+                </div>
+                <textarea id="memo-area" class="w-full h-32 bg-black/60 border border-white/20 rounded-lg p-3 text-sm focus:outline-none mb-3 focus:border-wood-500" placeholder="輸入筆記..."></textarea>
+                <div class="flex justify-end">
+                    <button onclick="saveMemo()" class="btn-wood px-4 py-1 rounded text-sm font-bold shadow">儲存</button>
+                </div>
+                <div id="memo-links" class="mt-4 flex flex-wrap gap-2">
+                    <!-- Link buttons will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: INFO -->
+        <div id="section-info" class="hidden fade-in space-y-4">
+            
+            <!-- Flight Card -->
+            <div class="glass-card p-4 mt-2">
+                <h3 class="font-bold text-wood-300 mb-3 border-b border-white/10 pb-2"><i class="fa-solid fa-plane mr-2"></i>航班資訊 (虎航)</h3>
+                <div class="space-y-4 text-sm">
+                    <div>
+                        <div class="text-xs text-gray-400">去程 IT270</div>
+                        <div class="flex justify-between items-center font-bold text-lg text-white">
+                            <span>15:25 KHH</span>
+                            <i class="fa-solid fa-arrow-right text-wood-500 text-sm"></i>
+                            <span>18:55 FUK</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">回程 IT271</div>
+                        <div class="flex justify-between items-center font-bold text-lg text-white">
+                            <span>19:55 FUK</span>
+                            <i class="fa-solid fa-arrow-right text-wood-500 text-sm"></i>
+                            <span>21:55 KHH</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotel Card -->
+            <div class="glass-card p-4">
+                <h3 class="font-bold text-wood-300 mb-3 border-b border-white/10 pb-2"><i class="fa-solid fa-hotel mr-2"></i>住宿資訊</h3>
+                <h4 class="font-bold mb-1 text-white">祗園大和 Roynet 飯店</h4>
+                <p class="text-xs text-gray-400 mb-3">Daiwa Roynet Hotel Hakata - Gion</p>
+                <div class="text-sm space-y-2 text-gray-200">
+                    <p><i class="fa-solid fa-location-dot text-wood-500 w-5"></i>福岡市博多區祇園町1-24</p>
+                    <p><i class="fa-solid fa-phone text-wood-500 w-5"></i>+81-92-281-3600</p>
+                </div>
+                <a href="https://www.google.com/maps/search/?api=1&query=Daiwa+Roynet+Hotel+Hakata+Gion" target="_blank" class="mt-4 block w-full text-center py-2.5 bg-white/10 rounded hover:bg-white/20 transition text-sm text-wood-100 font-bold border border-white/10">
+                    <i class="fa-solid fa-map-location-dot mr-1"></i> Google Maps 導航
+                </a>
+            </div>
+
+            <!-- Weather & Emergency -->
+            <div class="grid grid-cols-2 gap-4">
+                <a href="https://www.jma.go.jp/bosai/forecast/" target="_blank" class="glass-card p-4 flex flex-col items-center justify-center hover:bg-white/5 transition active:scale-95">
+                    <i class="fa-solid fa-cloud-sun text-3xl text-wood-300 mb-2"></i>
+                    <span class="font-bold text-sm text-white">天氣預報</span>
+                </a>
+                <div class="glass-card p-4">
+                    <h3 class="font-bold text-wood-300 text-sm mb-2">緊急聯絡</h3>
+                    <ul class="text-xs space-y-1 text-gray-300">
+                        <li>👮 警察: 110</li>
+                        <li>🚑 救護: 119</li>
+                        <li>🇹🇼 駐日處: +81-3-3280-7111</li>
+                    </ul>
+                </div>
+            </div>
+            
+             <!-- Notices -->
+             <div class="glass-card p-4">
+                <h3 class="font-bold text-red-300 mb-2 text-sm"><i class="fa-solid fa-circle-exclamation mr-2"></i>注意事項</h3>
+                <ul class="list-disc list-inside text-xs text-gray-300 space-y-1">
+                    <li>日本電壓100V (雙平腳插頭)。</li>
+                    <li>請勿協助陌生人攜帶行李。</li>
+                    <li>護照需隨身攜帶 (免稅需出示)。</li>
+                    <li>禁止攜帶肉類製品入境。</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Font Size Modal -->
+    <div id="font-modal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-sm rounded-xl p-6 relative bg-[#222]">
+            <button onclick="toggleFontSizeModal()" class="absolute top-2 right-2 text-gray-400 w-10 h-10 flex items-center justify-center active:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <h3 class="font-bold text-xl mb-4 text-wood-300">字體大小設定</h3>
+            <div class="flex items-center gap-4 mb-6">
+                <span class="text-sm text-gray-400">小</span>
+                <input type="range" min="14" max="22" value="16" id="font-slider" class="w-full accent-wood-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                <span class="text-xl text-white">大</span>
+            </div>
+            <div class="bg-black/40 p-4 rounded text-center border border-white/10 text-white">
+                <p class="mb-1">預覽文字大小</p>
+                <p class="text-wood-300">Preview Text</p>
+            </div>
+            <button onclick="applyFontSize()" class="btn-wood w-full mt-6 py-2.5 rounded-lg font-bold text-lg shadow-lg">確認套用</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA ---
+        const itineraryData = [
+            {
+                day: "D1",
+                date: "福岡抵達",
+                highlight: false,
+                spots: [
+                    { time: "13:00", title: "小港機場集合", type: "transport", important: true },
+                    { time: "18:55", title: "抵達福岡 FUK", type: "transport" },
+                    { time: "Check-in", title: "博多祗園大和魯內飯店", type: "hotel" },
+                    { title: "YAYOI軒 博多祇園店", type: "food" },
+                    { title: "全家 博多冷泉町店", type: "shop" },
+                    { title: "7-ELEVEN 博多祇園町店", type: "shop" },
+                    { title: "MaxValu Express 博多 祇園店", type: "shop" }
+                ]
+            },
+            {
+                day: "D2",
+                date: "門司港 & 小倉",
+                highlight: false,
+                spots: [
+                    { title: "門司港車站", type: "sight" },
+                    { title: "藍翼橋", type: "sight" },
+                    { title: "門司港懷舊展望室", type: "sight" },
+                    { title: "唐戶市場", type: "food" },
+                    { title: "小倉城 天守閣·庭園", type: "sight" },
+                    { title: "鳥貴族 博多筑紫口店", type: "food" },
+                    { title: "UNIQLO KITTE博多店", type: "shop" }
+                ]
+            },
+            {
+                day: "D3",
+                date: "柳川 & 太宰府",
+                highlight: false,
+                spots: [
+                    { title: "柳川觀光開發(株) 松月 乘船場", type: "activity", important: true },
+                    { title: "太宰府天滿宮", type: "sight" },
+                    { title: "一蘭 太宰府參道店", type: "food" },
+                    { title: "中洲屋台橫丁", type: "food" },
+                    { title: "長濱拉麺屋台おかもと", type: "food" },
+                    { title: "川端通商店街", type: "shop" }
+                ]
+            },
+            {
+                day: "D4",
+                date: "市區漫遊",
+                highlight: false,
+                spots: [
+                    { title: "福岡塔", type: "sight" },
+                    { title: "星巴克 福岡大濠公園店", type: "food" },
+                    { title: "大濠公園 日本庭園", type: "sight" },
+                    { title: "博多牛腸鍋 大山 天神店", type: "food" },
+                    { title: "櫛田神社", type: "sight" },
+                    { title: "Fuk Coffee", type: "food" },
+                    { title: "博多運河城", type: "shop" }
+                ]
+            },
+            {
+                day: "D5",
+                date: "最後巡禮 & 返台",
+                highlight: true,
+                spots: [
+                    { title: "真言宗 東長寺", type: "sight" },
+                    { title: "警固神社", type: "sight" },
+                    { title: "藍瓶咖啡 福岡天神店", type: "food" },
+                    { title: "福岡機場國內線觀景台", type: "sight" },
+                    { time: "19:55", title: "IT271 起飛", type: "transport", important: true },
+                    { time: "21:55", title: "抵達高雄", type: "transport" }
+                ]
+            }
+        ];
+
+        const defaultChecklist = [
+            { text: "護照", checked: false },
+            { text: "網卡 / SIM卡", checked: false },
+            { text: "旅遊保險單", checked: false },
+            { text: "個人藥品 (建議附藥單)", checked: false },
+            { text: "清潔盥洗用品", checked: false },
+            { text: "行動電源", checked: false },
+            { text: "日幣現金", checked: false }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let currentRate = localStorage.getItem('fk_rate') || 0.22;
+        let expenses = JSON.parse(localStorage.getItem('fk_expenses') || '[]');
+        let todos = JSON.parse(localStorage.getItem('fk_todos'));
+        if (!todos) {
+            todos = defaultChecklist;
+            localStorage.setItem('fk_todos', JSON.stringify(todos));
+        }
+        let memo = localStorage.getItem('fk_memo') || '';
+
+        // --- INIT ---
+        window.onload = function() {
+            renderPlan();
+            renderWalletList();
+            renderTodoList();
+            
+            // Init Values
+            document.getElementById('exchange-rate').value = currentRate;
+            document.getElementById('memo-area').value = memo;
+            updateMemoLinks();
+            
+            // Font Size
+            const savedFontSize = localStorage.getItem('fk_fontsize') || '16';
+            document.documentElement.style.setProperty('--base-font-size', savedFontSize + 'px');
+            document.getElementById('font-slider').value = savedFontSize;
+        };
+
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
+            // Hide all sections
+            ['plan', 'wallet', 'lists', 'info'].forEach(id => {
+                document.getElementById('section-' + id).classList.add('hidden');
+            });
+            // Show target
+            document.getElementById('section-' + tabId).classList.remove('hidden');
+            
+            // Update Nav Icons
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const btns = document.querySelectorAll('.nav-item');
+            if(tabId === 'plan') btns[0].classList.add('active');
+            if(tabId === 'wallet') btns[1].classList.add('active');
+            if(tabId === 'lists') btns[2].classList.add('active');
+            if(tabId === 'info') btns[3].classList.add('active');
+
+            // Scroll to top
+            document.getElementById('main-container').scrollTop = 0;
+        }
+
+        // --- PLAN RENDERER ---
+        function renderPlan() {
+            const container = document.getElementById('itinerary-container');
+            container.innerHTML = '';
+
+            itineraryData.forEach((day, index) => {
+                let spotsHtml = '';
+                day.spots.forEach(spot => {
+                    // Determine Icon & Color
+                    let icon = 'fa-location-dot';
+                    let typeColor = 'text-wood-300';
+                    if (spot.type === 'food') typeColor = 'text-orange-300';
+                    if (spot.type === 'shop') typeColor = 'text-pink-300';
+                    if (spot.type === 'transport') typeColor = 'text-blue-300';
+                    if (spot.type === 'hotel') typeColor = 'text-indigo-300';
+
+                    const timeDisplay = spot.time ? `<span class="text-xs font-mono bg-white/10 px-1.5 py-0.5 rounded mr-2 ${spot.important ? 'text-red-300 border border-red-500/50' : 'text-gray-300 border border-white/10'}">${spot.time}</span>` : '';
+                    
+                    const mapQuery = encodeURIComponent(spot.title + " 福岡");
+                    const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+
+                    spotsHtml += `
+                        <div class="relative pl-8 py-2 group">
+                            <div class="absolute left-[11px] top-3 w-4 h-4 rounded-full ${spot.important ? 'bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]' : 'bg-wood-600'} border-2 border-[#2a2a2a] z-10"></div>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    ${timeDisplay}
+                                    <span class="text-base font-medium ${spot.important ? 'text-wood-100' : 'text-gray-100'}">${spot.title}</span>
+                                </div>
+                                <a href="${mapLink}" target="_blank" class="text-gray-500 hover:text-wood-300 ml-3 pt-1 p-1 active:bg-white/10 rounded">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const dayCard = `
+                    <div class="glass-card overflow-hidden">
+                        <div class="bg-black/20 p-3 flex justify-between items-center border-b border-white/10">
+                            <h3 class="font-bold text-lg text-wood-300 font-cute">${day.day} : ${day.date}</h3>
+                        </div>
+                        <div class="p-4 timeline-line relative overflow-hidden">
+                            ${spotsHtml}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += dayCard;
+            });
+        }
+
+        // --- WALLET LOGIC ---
+        function saveRate() {
+            currentRate = parseFloat(document.getElementById('exchange-rate').value);
+            localStorage.setItem('fk_rate', currentRate);
+            calculate();
+        }
+
+        function calculate() {
+            const input = document.getElementById('calc-input').value;
+            const resDisplay = document.getElementById('calc-result-twd');
+            
+            try {
+                if (!/^[0-9+\-*/.() ]+$/.test(input)) throw new Error("Invalid");
+                const resultJPY = new Function('return ' + input)();
+                if (isNaN(resultJPY) || !isFinite(resultJPY)) throw new Error("NaN");
+                
+                const resultTWD = Math.round(resultJPY * currentRate);
+                resDisplay.innerHTML = `<span class="text-gray-400 text-sm">¥${Math.round(resultJPY)} ≈ </span> NT$ ${resultTWD.toLocaleString()}`;
+            } catch (e) {
+                resDisplay.innerText = "Error";
+            }
+        }
+
+        // Image Handling
+        let currentImageBase64 = null;
+
+        function handleImagePreview(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxWidth = 600;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height *= maxWidth / width;
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        currentImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        document.getElementById('image-preview').src = currentImageBase64;
+                        document.getElementById('image-preview-container').classList.remove('hidden');
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearImage() {
+            currentImageBase64 = null;
+            document.getElementById('expense-photo').value = '';
+            document.getElementById('image-preview-container').classList.add('hidden');
+        }
+
+        function addExpense() {
+            const item = document.getElementById('expense-item').value;
+            const amt = parseFloat(document.getElementById('expense-amount').value);
+
+            if (!item || isNaN(amt)) {
+                alert('請輸入項目與金額');
+                return;
+            }
+
+            const record = {
+                id: Date.now(),
+                item: item,
+                jpy: amt,
+                twd: Math.round(amt * currentRate),
+                img: currentImageBase64
+            };
+
+            expenses.unshift(record);
+            localStorage.setItem('fk_expenses', JSON.stringify(expenses));
+            
+            document.getElementById('expense-item').value = '';
+            document.getElementById('expense-amount').value = '';
+            clearImage();
+            
+            renderWalletList();
+        }
+
+        function deleteExpense(id) {
+            if(confirm('確定刪除此筆紀錄？')) {
+                expenses = expenses.filter(e => e.id !== id);
+                localStorage.setItem('fk_expenses', JSON.stringify(expenses));
+                renderWalletList();
+            }
+        }
+
+        function renderWalletList() {
+            const list = document.getElementById('expense-list');
+            list.innerHTML = '';
+            let totalJPY = 0;
+
+            expenses.forEach(e => {
+                totalJPY += e.jpy;
+                const imgHtml = e.img ? `<img src="${e.img}" class="w-12 h-12 rounded object-cover border border-white/20 ml-3 cursor-pointer hover:opacity-80" onclick="viewImage('${e.img}')">` : '';
+                
+                list.innerHTML += `
+                    <div class="glass-card p-3 flex items-center justify-between">
+                        <div class="flex items-center flex-1">
+                            <button onclick="deleteExpense(${e.id})" class="text-gray-500 mr-3 hover:text-red-400 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                            <div>
+                                <div class="font-bold text-gray-100">${e.item}</div>
+                                <div class="text-xs text-gray-400">NT$ ${e.twd.toLocaleString()}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="font-mono text-wood-300">¥${e.jpy.toLocaleString()}</span>
+                            ${imgHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('total-jpy').innerText = `¥${totalJPY.toLocaleString()}`;
+        }
+        
+        function viewImage(src) {
+            const w = window.open("");
+            w.document.write(`
+                <body style="background:#000;margin:0;display:flex;align-items:center;justify-content:center;height:100vh;">
+                    <img src="${src}" style="max-width:100%;max-height:100%;">
+                </body>
+            `);
+        }
+
+        // --- TODO LIST ---
+        function addTodo() {
+            const input = document.getElementById('new-todo');
+            if (input.value.trim()) {
+                todos.push({ text: input.value, checked: false });
+                localStorage.setItem('fk_todos', JSON.stringify(todos));
+                input.value = '';
+                renderTodoList();
+            }
+        }
+
+        function toggleTodo(index) {
+            todos[index].checked = !todos[index].checked;
+            localStorage.setItem('fk_todos', JSON.stringify(todos));
+            renderTodoList();
+        }
+
+        function deleteTodo(index) {
+            todos.splice(index, 1);
+            localStorage.setItem('fk_todos', JSON.stringify(todos));
+            renderTodoList();
+        }
+
+        function renderTodoList() {
+            const list = document.getElementById('todo-list');
+            list.innerHTML = '';
+            todos.forEach((todo, idx) => {
+                list.innerHTML += `
+                    <div class="glass-card p-3 flex items-center justify-between group">
+                        <div class="flex items-center flex-1 cursor-pointer" onclick="toggleTodo(${idx})">
+                            <div class="w-5 h-5 rounded border border-wood-500 mr-3 flex items-center justify-center ${todo.checked ? 'bg-wood-500' : 'bg-black/40'}">
+                                ${todo.checked ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}
+                            </div>
+                            <span class="${todo.checked ? 'line-through text-gray-500' : 'text-gray-100'}">${todo.text}</span>
+                        </div>
+                        <button onclick="deleteTodo(${idx})" class="text-gray-500 hover:text-red-400 px-2 p-1"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        // --- MEMO & FONT ---
+        function saveMemo() {
+            const val = document.getElementById('memo-area').value;
+            localStorage.setItem('fk_memo', val);
+            updateMemoLinks();
+            alert('已儲存備忘錄');
+        }
+
+        function updateMemoLinks() {
+            const text = document.getElementById('memo-area').value;
+            const container = document.getElementById('memo-links');
+            container.innerHTML = '';
+            
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const matches = text.match(urlRegex);
+            
+            if(matches) {
+                matches.forEach(url => {
+                    container.innerHTML += `<a href="${url}" target="_blank" class="px-3 py-1 bg-wood-600/50 text-xs rounded-full truncate max-w-full hover:bg-wood-500 text-white border border-wood-500/30"><i class="fa-solid fa-link mr-1"></i>連結</a>`;
+                });
+            }
+        }
+
+        function toggleFontSizeModal() {
+            const m = document.getElementById('font-modal');
+            m.classList.toggle('hidden');
+            const current = getComputedStyle(document.documentElement).getPropertyValue('--base-font-size').trim().replace('px','');
+            document.getElementById('font-slider').value = current || 16;
+            
+            document.getElementById('font-slider').oninput = function() {
+                document.documentElement.style.setProperty('--base-font-size', this.value + 'px');
+            }
+        }
+        
+        function applyFontSize() {
+            const val = document.getElementById('font-slider').value;
+            document.documentElement.style.setProperty('--base-font-size', val + 'px');
+            localStorage.setItem('fk_fontsize', val);
+            document.getElementById('font-modal').classList.add('hidden');
+        }
+
+    </script>
+</body>
+</html>
